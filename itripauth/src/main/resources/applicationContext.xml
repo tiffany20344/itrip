@@ -111,4 +111,5 @@
 	<bean id="validationToken" class="cn.itrip.common.ValidationToken">
 		<property name="redisAPI" ref="redisAPI" />
 	</bean>
+
 </beans>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	   xmlns:tx="http://www.springframework.org/schema/tx"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+	            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+                http://www.springframework.org/schema/aop
+                http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+                http://www.springframework.org/schema/tx
+                http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+                http://www.springframework.org/schema/context
+                http://www.springframework.org/schema/context/spring-context.xsd">
+
+	
+	<context:component-scan base-package="cn.itrip.trade.service,cn.itrip.trade.config"/>
+	<context:annotation-config />
+	<context:property-placeholder location="classpath:database.properties,classpath:systemConfig.properties"/>
+	<bean name="systemConfig" class="cn.itrip.common.SystemConfig">
+		<property name="tradeEndsUrl" value="${trade.ends.url}" />
+		<property name="tradeUseProxy" value="${trade.useProxy}" />
+		<property name="tradeProxyHost" value="${trade.proxy.host}" />
+		<property name="tradeProxyPort" value="${trade.proxy.port}" />		
+	</bean>
+	<!-- JNDI获取数据源(使用dbcp连接池) -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" scope="singleton">
+		<property name="driverClassName" value="${mysql.driver}"/>
+		<property name="url" value="${mysql.url}"/>
+		<property name="username" value="${mysql.user}"/>
+		<property name="password" value="203344"/>
+		<property name="initialSize" value="${mysql.initialSize}"/>
+		<property name="maxActive" value="${mysql.maxActive}"/>
+		<property name="maxIdle" value="${mysql.maxIdle}"/>
+		<property name="minIdle" value="${mysql.minIdle}"/>
+		<property name="maxWait" value="${mysql.maxWait}"/>
+		<property name="removeAbandoned" value="${mysql.removeAbandoned}"/>
+		<property name="removeAbandonedTimeout" value="${mysql.removeAbandonedTimeout}"/>
+		<property name= "testWhileIdle" value="true"/>
+		<property name= "timeBetweenEvictionRunsMillis" value="60000"/>
+		<property name= "testOnBorrow" value="false"/>
+		<property name= "testOnReturn" value="false"/>
+		<property name= "validationQuery" value="select 1"/>
+		<property name= "numTestsPerEvictionRun" value="${mysql.maxActive}"/>
+	</bean>
+
+	<!-- 事务管理   -->
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
+	<!-- 配置mybatis SqlSessionFactoryBean -->
+	<bean id="sqlSessionFactoryBean" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"/>
+		<property name="configLocation" value="classpath:mybatis-config.xml"/>
+	</bean>
+
+	<aop:aspectj-autoproxy/>
+	<aop:config proxy-target-class="true">
+		<aop:pointcut expression="execution(* *cn.itrip.trade.service..*(..))" id="transService"/>
+		<aop:advisor advice-ref="myAdvice" pointcut-ref="transService"/>
+	</aop:config>
+
+	<tx:advice id="myAdvice" transaction-manager="txManager">
+		<tx:attributes>
+			<tx:method name="itriptx*"  propagation="REQUIRED" rollback-for="Exception"  />
+			<tx:method name="*" />
+		</tx:attributes>
+	</tx:advice>
+
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="cn.itrip.dao"/>
+	</bean>
+	<!--redis 配置 开始-->
+	<bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<property  name="maxIdle"   value="${redis.maxIdle}" />
+		<property  name="testOnBorrow"  value="true" />
+	</bean>
+	<!-- Config poolConfig, String host, int port, int timeout, String password, int database-->
+	<bean id="jedisPool" class="redis.clients.jedis.JedisPool" destroy-method="destroy" >
+		<constructor-arg ref="jedisPoolConfig"/>
+		<constructor-arg value="${redis.host}"/>
+		<constructor-arg value="${redis.port}"/>
+	</bean>
+	<bean id="redisAPI" class="cn.itrip.common.RedisAPI">
+		<property name="jedisPool" ref="jedisPool"/>
+	</bean>
+
+	<bean id="validationToken" class="cn.itrip.common.ValidationToken">
+		<property name="redisAPI" ref="redisAPI" />
+	</bean>
+    <bean class="cn.itrip.trade.config.AlipayConfig">
+        <property name="appID" value="2016092400582796"/>
+        <property name="rsaPrivateKey" value="MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCSvY20C/7Kkm5rPU75yKu4P+Ba8MzqMCjxZbdKNLRMkOGyzafHSoReR7p+uOg/AqnBqYeB8idHJQPWmsyb+INzcYhu5vGd1ysbiG+HutaHY/9XKqv39Ejb8cQqOz7AgqpU7tySwhLN7LW5I+bPSx1+tWsWSOMygMTZhdc9VOOWsvikOjkvwDAZlOyAIx9WIRj2APd9jHzCJad7iK2iZw4b+E4Xsa/QISts4d/ynQIiM7sDvnbmH3NK0KEQgqR3o+dYEqDEn3quAgSmzMdijdwIbK/VmslrlRbf2zrx6R9mGZ8pCDPpdhTrr2bimhts5FQwM//4Sr4JNlf7QYn85I6DAgMBAAECggEAK/T8beLqAGS9DwLelZS3XApGeveHat/iY+3EakY/fHAqLBXPHLQF0vhJtYxOhhGWKJ1QKm0PtxAvhin5AQAA4KQx6obj+hRqpWTJhC9D9GrQIpx1x2E2MizKRpxYv/Jkc+zZxly8pVMzXLKUgaROwZY27gYHiSlpzn95arXzN0EPmEckPDAVL7VuY51Z3eUcLHzztyEHAtxwspJqh8cUtqvEaHi5aHzw6m7p2WTFYSXW9u3ApvxpgWhj3CQnee1G4UGW+pOAGoXPlMrRHu0evWSgIaKotuRJEW+4QuxYpFIS+LYGWBLGao/8CUkH5HlvcU1t+BLRnXqDXNWDu1jVAQKBgQDoEXIx6JONbBdndQ4H28rKonmDq+yKIfDoaJWNBHt3CT612rZQhyKYUJzNrYw6scpRZtnW1nDlYchjYkFDwGV0gxPtuBFDNuW4jip9YVQqmzP+9DlAYyYYxyyiaExZrvs3Ao+CQ8FXId7NXXMUZ9yQHu5yZk7FfietOek9W81FWQKBgQCh33j/7qe26xvmxum6Rzvi2zvsJnqgKadzj0IH3VNUVobAPdqXZKkeYpVXbfoNrFp+T20vVZ07G+pWPbHJekJm9W6hkshJpIRGvfL0i14G1N8CKv6BZbv7GdG6uEmVTWhg6nmKcq3gP5zFbAy5OteE6yGtNiw/r2k0kd48+FjLOwKBgBMQm9kNylFr9+A/9Y8ft2E+R81RanVOpIPzU5XqMFpvH//AoAmtkGIC/V7ISyTnRj+5u1uy8kNl7Rh9Ee+G9s7DlfeJj6F9+RFYXJVAUbHOXk8rsShg/Ng8RKZy+xLDFVBHnZKODmwiFDO64aFjhvMwF1a+oOoImynYABlSWWLBAoGAHNqa1PQTjTWHebGHRB8ie6OcoNGTFi2WnbCxknlPOz9ZMbdU2Zul0ba87CK8aeeJEe7ShZd7OWgWc1z37fQPFg81szNY5FehBIMjZZfaINmdDuPfDe22fmHx0pi69RQhQPVKyPT8LXbpWP+TnQjyFc1b6WY4qPl5hVdjB/c0zLUCgYEApR2Wg0TAAC/iKFFrL18AbSznnY6Ux8hv2/rqNP/yeOYNxtwBqwRJO3+OhUE73gZHSJKphXPcUa6+Z+D+uAcbnRGxD6YS5VP5lHVph+DGW+f51N18nI4qr1GG92xZFbR9gjvyqdSaK4i6Y7MSyARfgYXnd4Ha22aOwfbVeMktZF8="/>
+        <property name="notifyUrl" value="http://48abf5e8.ngrok.io/trade/api/notify"/>
+        <property name="returnUrl" value="http://48abf5e8.ngrok.io/trade/api/return"/>
+        <property name="url" value="https://openapi.alipaydev.com/gateway.do"/>
+        <property name="charset" value="UTF-8"/>
+        <property name="format" value="json"/>
+        <property name="alipayPublicKey" value="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxhTtHov17vZYyNyiiu56m431DQFaS8B+DA6mH+QO3eDu1WzeDcK/wCYAOb5vEj8+1iWZdpvCfP23n3Gxj5KjD+m8qmPEJgu6XpK/qiY6U7C9u4zA8PpnBhUV/P7ygS68rJE5AeO+sTXhCYuTyA/EVP/ldmtzbwX7FOin149Pqkgc40j/7VHXmtp9vtGOP4Tq7M6Dc1WTaATYSiP35+OG/UTU36YqJLICedoj/QlwweM0SX7MWMJqmGmuhM4x3pUrrgiF3A1NHsHGjc9eJ6Q0gWIAn9QPKSRmV1nCpyd/FZJXZVcCRKsfGiZUIooDwqgf4q+WzqQeU6CNgY2NGHJifwIDAQAB"/>
+        <property name="logPath" value="/logs"/>
+        <property name="signType" value="RSA2"/>
+        <property name="paymentFailUrl" value="http://locahost/index.html#/orderpaystate?orderNo=%s&amp;id=%s&amp;state=0"/>
+        <property name="paymentSuccessUrl" value="http://localhost/index.html#/orderpaystate?orderNo=%s&amp;id=%s"/>
+    </bean>
+</beans>

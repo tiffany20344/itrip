@@ -26,6 +26,7 @@
           <element id="library" level="project" name="Maven: net.sourceforge.jregex:jregex:1.2_01" />
           <element id="library" level="project" name="Maven: javax.mail:mail:1.4.7" />
           <element id="library" level="project" name="Maven: javax.activation:activation:1.1" />
+          <element id="library" level="project" name="Maven: org.slf4j:slf4j-api:1.5.10" />
           <element id="library" level="project" name="Maven: org.directwebremoting:dwr:3.0.0-RELEASE" />
           <element id="library" level="project" name="Maven: nl.bitwalker:UserAgentUtils:1.2.4" />
           <element id="library" level="project" name="Maven: org.springframework:spring-context-support:4.1.7.RELEASE" />
@@ -39,6 +40,7 @@
           <element id="library" level="project" name="Maven: aopalliance:aopalliance:1.0" />
           <element id="library" level="project" name="Maven: org.springframework:spring-webmvc:4.1.7.RELEASE" />
           <element id="library" level="project" name="Maven: org.springframework:spring-expression:4.1.7.RELEASE" />
+          <element id="library" level="project" name="Maven: org.mapstruct:mapstruct-jdk8:1.2.0.Final" />
           <element id="library" level="project" name="Maven: org.springframework:spring-orm:3.2.13.RELEASE" />
           <element id="library" level="project" name="Maven: org.springframework:spring-jdbc:3.2.13.RELEASE" />
           <element id="library" level="project" name="Maven: org.springframework:spring-tx:3.2.13.RELEASE" />

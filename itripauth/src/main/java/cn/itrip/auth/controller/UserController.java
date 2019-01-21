@@ -41,7 +41,7 @@ public class UserController {
         //1.邮箱验证
         if(this.validEmail(userVO.getUserCode())==false)
 
-            return DtoUtil.returnFail("请输入正确的邮箱", ErrorCode.AUTH_ILLEGAL_USERCODE);
+                return DtoUtil.returnFail("请输入正确的邮箱", ErrorCode.AUTH_ILLEGAL_USERCODE);
 
         //2.调用service
         ItripUser user = new ItripUser();

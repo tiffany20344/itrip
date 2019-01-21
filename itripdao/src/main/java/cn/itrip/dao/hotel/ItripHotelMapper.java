@@ -1,18 +1,37 @@
 package cn.itrip.dao.hotel;
+
 import cn.itrip.beans.pojo.ItripAreaDic;
 import cn.itrip.beans.pojo.ItripHotel;
 import cn.itrip.beans.pojo.ItripLabelDic;
-import cn.itrip.beans.vo.hotel.*;
+import cn.itrip.beans.vo.hotel.ItripSearchFacilitiesHotelVO;
+import cn.itrip.beans.vo.hotel.ItripSearchPolicyHotelVO;
 import org.apache.ibatis.annotations.Param;
+
 import java.util.List;
 import java.util.Map;
 
 public interface ItripHotelMapper {
-
+	/**
+	 * 根据id查询酒店信息
+	 * @param id
+	 * @return
+	 * @throws Exception
+	 */
 	public ItripHotel getItripHotelById(@Param(value = "id") Long id)throws Exception;
 
+	/**
+	 * 根据id查询酒店设施
+	 * @param id
+	 * @return
+	 * @throws Exception
+	 */
 	public ItripSearchFacilitiesHotelVO getItripHotelFacilitiesById(@Param(value = "id") Long id) throws Exception;
-
+	/**
+	 * 根据id查询酒店政策
+	 * @param id
+	 * @return
+	 * @throws Exception
+	 */
 	public ItripSearchPolicyHotelVO queryHotelPolicy(@Param(value = "id") Long id) throws Exception;
 
 	/*public List<ItripSearchDetailsHotelVO> queryHotelDetails(@Param(value="id") Long id) throws Exception;*/

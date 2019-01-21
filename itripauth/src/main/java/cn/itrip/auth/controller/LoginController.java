@@ -55,7 +55,7 @@ public class LoginController {
         }
     }
 
-    @RequestMapping(value ="/ ",method = RequestMethod.GET,produces = {"application/json;charset=utf-8"},headers = "token")
+    @RequestMapping(value ="/logout",method = RequestMethod.GET,produces = {"application/json;charset=utf-8"},headers = "token")
     @ResponseBody
     public Dto logout(HttpServletRequest request){
         String token = request.getHeader("token");

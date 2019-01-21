@@ -9,13 +9,17 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 @Service("tokenService")
-public class TokenServiceImpl implements TokenService {
+public class  TokenServiceImpl implements TokenService {
 
     @Resource
     private RedisAPI redisAPI;
+
+    private long protectenTime = 30*60*1000;
+    private int delay = 2*60;
 
     /**
      * 生成Token字符串
@@ -74,5 +78,27 @@ public class TokenServiceImpl implements TokenService {
     @Override
     public void delete(String token) throws Exception {
         redisAPI.delete(token);
+    }
+
+    @Override
+    public String reloadToken(String userAgent, String token) throws Exception {
+        //验证token是否有效
+        if (!redisAPI.exist(token))
+            throw new Exception("token无效");
+        //能不能狗置换
+        Date genTime = new SimpleDateFormat("yyyyMMddHHmmsss").parse(token.split("-")[3]);
+        long passed = Calendar.getInstance().getTimeInMillis()-genTime.getTime();
+        if (passed<protectenTime)
+            throw new Exception("token置换保护期内，你不能置换。剩余"+(protectenTime-passed)/1000);
+        //进行转换
+        String user = redisAPI.get(token);
+        ItripUser itripUser = JSON.parseObject(user,ItripUser.class);
+        String newToken = this.generateToken(userAgent,itripUser);
+        //老的token延时过期
+        redisAPI.set(token,delay,user);
+        //新的token保存到redis
+        this.save(newToken,itripUser);
+        return newToken;
+
     }
 }

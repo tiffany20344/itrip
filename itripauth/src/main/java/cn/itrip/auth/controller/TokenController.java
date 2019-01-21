@@ -29,8 +29,8 @@ public class TokenController {
 	 * @return 新的token信息
 	 */
 	
-	@RequestMapping(value = "/retoken", method = RequestMethod.POST,produces= "application/json")
-	public @ResponseBody Dto replace(HttpServletRequest request) {
+	@RequestMapping(value = "/retoken", method = RequestMethod.POST,produces= "application/json",headers = "token")
+	public @ResponseBody Dto replace(HttpServletRequest request) throws Exception {
 		/*
 		 * 请求格式 
 		 * $.ajax({
@@ -44,7 +44,17 @@ public class TokenController {
 				})
 		 * 
 		 */
-		return  null;
+		String  newtoken =tokenService.reloadToken(request.getHeader("user-agent"),request.getHeader("token"));
+		try {
+			if (newtoken != null) {
+				return DtoUtil.returnSuccess("token以更改,请重新登陆");
+			} else {
+				return DtoUtil.returnSuccess("token失效,请重新登陆");
+			}
+		}catch (Exception e){
+			e.printStackTrace();
+			return DtoUtil.returnFail(e.getMessage(), ErrorCode.AUTH_UNKNOWN);
+		}
 	}
 
 	@RequestMapping(value = "/validateToken",method = RequestMethod.GET,produces = "application/json",headers = "token")
