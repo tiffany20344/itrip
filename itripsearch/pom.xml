@@ -51,10 +51,7 @@
                     <groupId>org.springframework</groupId>
                     <artifactId>spring-aop</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml</groupId>
-                    <artifactId>classmate</artifactId>
-      ·          </exclusion>
+
             </exclusions>
         </dependency>
         <dependency>
