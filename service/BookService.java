@@ -18,7 +18,7 @@ public class BookService {
         bookDao.save(book);
     }
 
-    public Page<Book> getBooByPage(Pageable pageable){
+    public Page<Book> getBookByPage(Pageable pageable){
         return bookDao.findAll(pageable);
     }
 
