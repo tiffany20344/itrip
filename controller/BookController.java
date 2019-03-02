@@ -16,7 +16,7 @@ public class BookController {
     @Resource
     BookService bookService;
 
-    @GetMapping("findAll")
+    @GetMapping("/findAll")
     public void findAll(){
         PageRequest pageable = PageRequest.of(2,3);
         Page<Book> page = bookService.getBookByPage(pageable);
@@ -28,7 +28,7 @@ public class BookController {
         System.out.println("每页记录数："+page.getSize());
     }
 
-    @GetMapping("search")
+    @GetMapping("/search")
     public void search(){
         List<Book> b1 = bookService.getBookByIdAndAuthor("鲁迅",7);
         List<Book> b2 = bookService.getBooksByAuthorStartingWith("吴");
@@ -42,7 +42,7 @@ public class BookController {
         System.out.println("b:"+b);
     }
 
-    @GetMapping("save")
+    @GetMapping("/save")
     public void save(){
         Book book = new Book();
         book.setAuthor("鲁迅");
