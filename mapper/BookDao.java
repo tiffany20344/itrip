@@ -4,11 +4,14 @@ import cn.llz.chapter05.entity.Book;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+
+@Component
 public interface BookDao extends JpaRepository<Book,Integer> {
-    List<Book> getBooksByAuthorStratingWith(String author);
+    List<Book> getBooksByAuthorStartingWith(String author);
     List<Book> getBooksByPriceGreaterThan(Float price);
     @Query(value = "select * from t_book where id = (select max(id) from t_book)",nativeQuery = true)
     Book getMaxIdBook();

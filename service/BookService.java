@@ -23,7 +23,7 @@ public class BookService {
     }
 
     public List<Book> getBooksByAuthorStartingWith(String author){
-        return bookDao.getBooksByAuthorStratingWith(author);
+        return bookDao.getBooksByAuthorStartingWith(author);
     }
 
     public List<Book> getBooksByPriceGreaterThan(Float price){
